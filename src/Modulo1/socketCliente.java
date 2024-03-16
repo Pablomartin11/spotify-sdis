@@ -1,3 +1,5 @@
+package Modulo1;
+
 public class socketCliente {
     public static final int PUERTO =10000;
     public static void main(String[] args){

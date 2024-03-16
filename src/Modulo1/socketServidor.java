@@ -1,3 +1,7 @@
+package Modulo1;
+
+import Modulo1.BlacklistManager;
+
 import java.io.PrintStream;
 import java.util.concurrent.ConcurrentHashMap;
 
