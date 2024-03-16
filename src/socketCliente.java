@@ -1,5 +1,5 @@
 public class socketCliente {
-    public static final int PUERTO =4000;
+    public static final int PUERTO =10000;
     public static void main(String[] args){
         String linea = null;
         try{
@@ -10,11 +10,17 @@ public class socketCliente {
             java.io.BufferedReader inred = new java.io.BufferedReader(new java.io.InputStreamReader(miSocket.getInputStream()));
             java.io.PrintStream outred = new java.io.PrintStream(miSocket.getOutputStream());
 
-            while((linea =tec.readLine()) != null){
-                outred.println(linea);
-                linea = inred.readLine();
-                System.out.println("Recibido "+linea);
-            }
+            System.out.println(inred.readLine());
+            linea = tec.readLine();
+            outred.println(linea); // envia el usuario
+
+            System.out.println(inred.readLine());
+
+            linea = tec.readLine();
+            outred.println(linea); // envia la contraseña
+
+            System.out.println(inred.readLine()); //Respuesta
+
         } catch (Exception e){e.printStackTrace();}
 
     }
