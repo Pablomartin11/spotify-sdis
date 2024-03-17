@@ -1,7 +1,5 @@
 package Modulo1;
 
-import Modulo1.BlacklistManager;
-
 import java.io.PrintStream;
 import java.util.concurrent.ConcurrentHashMap;
 import java.net.InetAddress;
@@ -42,37 +40,42 @@ public class socketServidor {
                     java.io.PrintStream outred = new java.io.PrintStream(sock.getOutputStream());
 
                     connectionBlacklistManager.incrementCount(clientIP);
+                    
+                    // Definimos el hilo.
+                    Runnable servant = () -> {
+                        try {
+                            outred.println("Welcome, please type your credentials to LOG in");
 
+                            String username = inred.readLine();
+                            outred.println("OK: password?");
 
-                    outred.println("Welcome, please type your credentials to LOG in");
+                            String password = inred.readLine();
 
-                    String username = inred.readLine();
-                    outred.println("OK: password?");
-
-                    String password = inred.readLine();
-
-                    if (validateCredentials(username, password)) {
-                        connectionBlacklistManager.resetCount(clientIP); // Clear connection count for successful login
-                        outred.println("User successfully logged in");
-                    } else {
-                        loginBlacklistManager.incrementCount(clientIP);
-                        if (loginBlacklistManager.isIPBlocked(clientIP)) {
-                            connectionBlacklistManager.resetCount(clientIP); // Clear connection count for IP blocked due to login failures
-                            outred.println("Err Max Number of login attempts reached.");
-                            continue;
+                            if (validateCredentials(username, password)) {
+                                connectionBlacklistManager.resetCount(clientIP); // Clear connection count for successful login
+                                outred.println("User successfully logged in");
+                            } else {
+                                loginBlacklistManager.incrementCount(clientIP);
+                                if (loginBlacklistManager.isIPBlocked(clientIP)) {
+                                    connectionBlacklistManager.resetCount(clientIP); // Clear connection count for IP blocked due to login failures
+                                    outred.println("Err Max Number of login attempts reached.");
+                                }
+                                outred.println("Credentials does not match our records: Enter username again:");
+                            }
+                        } catch (java.io.IOException ioe){
+                            System.err.println("Cerrando socket de cliente");
+                            ioe.printStackTrace(System.err);
                         }
-                        outred.println("Credentials does not match our records: Enter username again:");
-                        continue; // Retry the interaction sequence
-                    }
+                };
 
+                // Corremos el hilo.
+                Thread t = new Thread(servant, "Sirviente Peticiones");
+                t.start();
 
                 } catch (java.io.IOException e) {
                     System.err.println("Cerrando socket de cliente");
-
                     e.printStackTrace(System.err);
-
                 }
-
             } // fin del while()
 
         } catch (java.io.IOException e) {
