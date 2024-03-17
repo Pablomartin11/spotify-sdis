@@ -4,12 +4,13 @@ import Modulo1.BlacklistManager;
 
 import java.io.PrintStream;
 import java.util.concurrent.ConcurrentHashMap;
+import java.net.InetAddress;
 
 public class socketServidor {
     public static final int PUERTO = 10000;
 
-    private static final BlacklistManager connectionBlacklistManager = new BlacklistManager();
-    private static final BlacklistManager loginBlacklistManager = new BlacklistManager();
+    private static final BlacklistManager connectionBlacklistManager = new BlacklistManager(3);
+    private static final BlacklistManager loginBlacklistManager = new BlacklistManager(2);
 
     // Almacena las credenciales en un ConcurrentHashMap
     private static final ConcurrentHashMap<String, String> credenciales = new ConcurrentHashMap<>();
@@ -27,11 +28,11 @@ public class socketServidor {
                     System.out.println("----Servidor esperando al cliente ----");
                     java.net.Socket sock = servidor.accept(); // ojito!! sin try-with-rc
 
-                    //TODO CAMBIAR STRING POR INETADRESS
-                    String clientIP = sock.getInetAddress().getHostAddress();
+                    InetAddress client = sock.getInetAddress();
+                    String clientIP = client.getHostAddress();
 
 
-                    if (connectionBlacklistManager.isIPBlockedForConnections(clientIP)) {
+                    if (connectionBlacklistManager.isIPBlocked(clientIP)) {
                         PrintStream outred = new PrintStream(sock.getOutputStream());
                         outred.println("Err Max Number of connections reached.");
                         continue;
@@ -40,7 +41,7 @@ public class socketServidor {
                     java.io.BufferedReader inred = new java.io.BufferedReader( new java.io.InputStreamReader(sock.getInputStream()));
                     java.io.PrintStream outred = new java.io.PrintStream(sock.getOutputStream());
 
-                    connectionBlacklistManager.incrementConnectionCount(clientIP);
+                    connectionBlacklistManager.incrementCount(clientIP);
 
 
                     outred.println("Welcome, please type your credentials to LOG in");
@@ -51,12 +52,12 @@ public class socketServidor {
                     String password = inred.readLine();
 
                     if (validateCredentials(username, password)) {
-                        connectionBlacklistManager.clearConnectionCount(clientIP); // Clear connection count for successful login
+                        connectionBlacklistManager.resetCount(clientIP); // Clear connection count for successful login
                         outred.println("User successfully logged in");
                     } else {
-                        loginBlacklistManager.incrementLoginFailCount(clientIP);
-                        if (loginBlacklistManager.isIPBlockedForLogin(clientIP)) {
-                            connectionBlacklistManager.clearConnectionCount(clientIP); // Clear connection count for IP blocked due to login failures
+                        loginBlacklistManager.incrementCount(clientIP);
+                        if (loginBlacklistManager.isIPBlocked(clientIP)) {
+                            connectionBlacklistManager.resetCount(clientIP); // Clear connection count for IP blocked due to login failures
                             outred.println("Err Max Number of login attempts reached.");
                             continue;
                         }
