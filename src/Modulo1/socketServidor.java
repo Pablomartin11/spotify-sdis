@@ -52,9 +52,8 @@ public class socketServidor {
                                 outred.println("OK: password?");
                                 password = inred.readLine();
 
-                                loginBlacklistManager.incrementCount(clientIP);
-
                                 if(!validateCredentials(username, password)){
+                                    loginBlacklistManager.incrementCount(clientIP);
                                     outred.println("Credentials does not match our records: Enter username again:");
                                 }
                             }while(!validateCredentials(username,password) && !loginBlacklistManager.isIPBlocked(clientIP));

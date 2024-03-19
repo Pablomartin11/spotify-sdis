@@ -12,16 +12,22 @@ public class socketCliente {
             java.io.BufferedReader inred = new java.io.BufferedReader(new java.io.InputStreamReader(miSocket.getInputStream()));
             java.io.PrintStream outred = new java.io.PrintStream(miSocket.getOutputStream());
 
-            System.out.println(inred.readLine());
-            linea = tec.readLine();
-            outred.println(linea); // envia el usuario
+            String loginCheck = "1";
+            do {
+                System.out.println("1");
+                System.out.println(inred.readLine());
+                linea = tec.readLine();
+                outred.println(linea); // envia el usuario
 
-            System.out.println(inred.readLine());
+                System.out.println(inred.readLine());
 
-            linea = tec.readLine();
-            outred.println(linea); // envia la contraseña
+                linea = tec.readLine();
+                outred.println(linea); // envia la contraseña
 
-            System.out.println(inred.readLine()); //Respuesta
+                System.out.println(inred.readLine()); //Respuesta
+
+                loginCheck = inred.readLine();
+            } while(!loginCheck.equals("User successfully logged in"));
 
         } catch (Exception e){e.printStackTrace();}
 
