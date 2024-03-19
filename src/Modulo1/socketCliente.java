@@ -14,7 +14,6 @@ public class socketCliente {
 
             String loginCheck = "1";
             do {
-                System.out.println("1");
                 System.out.println(inred.readLine());
                 linea = tec.readLine();
                 outred.println(linea); // envia el usuario
@@ -24,9 +23,9 @@ public class socketCliente {
                 linea = tec.readLine();
                 outred.println(linea); // envia la contraseña
 
-                System.out.println(inred.readLine()); //Respuesta
-
                 loginCheck = inred.readLine();
+                System.out.println(loginCheck); //Respuesta
+
             } while(!loginCheck.equals("User successfully logged in"));
 
         } catch (Exception e){e.printStackTrace();}
