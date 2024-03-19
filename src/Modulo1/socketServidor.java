@@ -29,7 +29,7 @@ public class socketServidor {
                     InetAddress client = sock.getInetAddress();
                     String clientIP = client.getHostAddress();
 
-
+                    connectionBlacklistManager.incrementCount(clientIP);
                     if (connectionBlacklistManager.isIPBlocked(clientIP)) {
                         PrintStream outred = new PrintStream(sock.getOutputStream());
                         outred.println("Err Max Number of connections reached.");
@@ -39,28 +39,35 @@ public class socketServidor {
                     java.io.BufferedReader inred = new java.io.BufferedReader( new java.io.InputStreamReader(sock.getInputStream()));
                     java.io.PrintStream outred = new java.io.PrintStream(sock.getOutputStream());
 
-                    connectionBlacklistManager.incrementCount(clientIP);
                     
                     // Definimos el hilo.
                     Runnable servant = () -> {
                         try {
-                            outred.println("Welcome, please type your credentials to LOG in");
+                            String password = "1";
+                            String username = "1";
+                            do {
+                                outred.println("Welcome, please type your credentials to LOG in");
 
-                            String username = inred.readLine();
-                            outred.println("OK: password?");
+                                username = inred.readLine();
+                                outred.println("OK: password?");
+                                password = inred.readLine();
 
-                            String password = inred.readLine();
-
-                            if (validateCredentials(username, password)) {
-                                connectionBlacklistManager.resetCount(clientIP); // Clear connection count for successful login
-                                outred.println("User successfully logged in");
-                            } else {
                                 loginBlacklistManager.incrementCount(clientIP);
-                                if (loginBlacklistManager.isIPBlocked(clientIP)) {
-                                    connectionBlacklistManager.resetCount(clientIP); // Clear connection count for IP blocked due to login failures
-                                    outred.println("Err Max Number of login attempts reached.");
+
+                                if(!validateCredentials(username, password)){
+                                    outred.println("Credentials does not match our records: Enter username again:");
                                 }
-                                outred.println("Credentials does not match our records: Enter username again:");
+                            }while(!validateCredentials(username,password) && !loginBlacklistManager.isIPBlocked(clientIP));
+
+                            if (loginBlacklistManager.isIPBlocked(clientIP)){
+                                outred.println("Err Max Number of login attempts reached.");
+                                connectionBlacklistManager.resetCount(clientIP); // Clear connection count for successful login
+                                while(true){
+                                }
+                            }
+
+                            if(validateCredentials(username, password)){
+                                outred.println("User successfully logged in");
                             }
                         } catch (java.io.IOException ioe){
                             System.err.println("Cerrando socket de cliente");
