@@ -1,4 +1,4 @@
-package Modulo1;
+package Modulo2;
 
 public enum Primitiva {
     INFO,

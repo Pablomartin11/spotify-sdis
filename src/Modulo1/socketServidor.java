@@ -43,11 +43,11 @@ public class socketServidor {
                     // Definimos el hilo.
                     Runnable servant = () -> {
                         try {
-                            String password = "1";
-                            String username = "1";
-                            do {
-                                outred.println("Welcome, please type your credentials to LOG in");
+                            String password = "";
+                            String username = "";
+                            outred.println("Welcome, please type your credentials to LOG in (username p)");
 
+                            do {
                                 username = inred.readLine();
                                 outred.println("OK: password?");
                                 password = inred.readLine();
