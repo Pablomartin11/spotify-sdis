@@ -6,7 +6,7 @@ public class Servidor {
     int NThreads = 5;  //hilos del ThreadPool
     java.util.concurrent.ExecutorService exec = java.util.concurrent.Executors.newFixedThreadPool(NThreads);
 
-    MultiMap<String, String> mapa = new MultiMap();
+    MultiMap<String, String> mapa = new MultiMap<>();
 
     try {
         java.net.ServerSocket sock = new java.net.ServerSocket(PUERTO);
