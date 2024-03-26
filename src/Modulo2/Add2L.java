@@ -1,27 +1,27 @@
 package Modulo2;
 
-public class Cliente {
+import Modulo2.Primitiva;
+import Modulo2.MensajeProtocolo;
+import Modulo2.MalMensajeProtocoloException;
+
+public class Add2L {
     final private int PUERTO = 2000;
     static java.io.ObjectInputStream ois = null;
     static java.io.ObjectOutputStream oos = null;
+
     public static void main(String[] args) throws java.io.IOException {
-        String host = "localhost";
-        String linea;
+        if (args.length != 3) {
+            System.out.println("Use:\njava protocol.cliente.Hello host clave valor");
+            System.exit(-1);
+        }
+        String host = args[0];  //localhost o ip|dn del servidor
+        String clave = args[1];  //clave del deposito
+        String valor = args[2];  //valor del par (clave,valor)
         java.net.Socket sock = new java.net.Socket(host, 2000);
         try {
-            //Creación de los canales de serialización de objetos
             oos = new java.io.ObjectOutputStream(sock.getOutputStream());
             ois = new java.io.ObjectInputStream(sock.getInputStream());
-            //Sin teclado, probemos las primitivas por programa
-            System.out.println("Pulsa <Enter> para comenzar"); System.in.read();
-            //INICIO Escenario 1
-            //pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.XAUTH,"Hector 1234"));
-
-            pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.ADD2L,"Lista1", "Esclava remix"));
-
-
-            //a estas alguras algún cliente externo debería insertar un mensaje en la cola
-            //FIN Esceniario 1
+            pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.ADD2L, clave, valor));
         } catch (java.io.EOFException e) {
             System.err.println("Cliente: Fin de conexión.");
         } catch (java.io.IOException e) {
@@ -31,17 +31,16 @@ public class Cliente {
         } catch (Exception e) {
             System.err.println("Cliente: Excepción. Cerrando Sockets: "+e);
         } finally {
-        ois.close();
-        oos.close();
-        sock.close();
+            ois.close();
+            oos.close();
+            sock.close();
         }
     }
- 
-    //Prueba una interacción de escritura y lectura con el servidor
+
     static void pruebaPeticionRespuesta(MensajeProtocolo mp) throws java.io.IOException, MalMensajeProtocoloException, ClassNotFoundException {
         System.out.println("> "+mp);
         oos.writeObject(mp);
         System.out.println("< "+(MensajeProtocolo) ois.readObject());
-        System.out.println("Pulsa <Enter>"); System.in.read();
     }
 }
+

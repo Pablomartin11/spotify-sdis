@@ -23,10 +23,41 @@ class Sirviente implements Runnable {
                 MensajeProtocolo me = (MensajeProtocolo) ois.readObject();
                 MensajeProtocolo ms;
                 //me y ms: mensajes entrante y saliente
-                System.out.println("Sirviente: "+ns+": [ME: "+ me);  //depuracion me
+                System.out.println("Sirviente: "+ns+": [ME: "+ me+"]");  //depuracion me
 
                 switch (me.getPrimitiva()) {
+                case INFO:
+                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
+                break;
                 case XAUTH:
+                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
+                break;
+                case ADD2L:
+                    mapa.push(me.getIdCola(), me.getMensaje());
+                    synchronized (mapa) {
+                        mapa.notify();
+                    }  // despierta un sirviente esperando en un bloqueo de "mapa"
+                    ms = new MensajeProtocolo(Primitiva.ADD2L);
+                break;
+                case READL:
+                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
+                break;
+                case MEDIA:
+                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
+                break;
+                case EMPTY:
+                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
+                break;
+                case DELETEL:
+                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
+                break;
+                case DELETED:
+                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
+                break;
+                case NOTAUTH:
+                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
+                break;
+                case ERROR:
                     ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
                 break;
                 default:
