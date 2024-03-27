@@ -1,5 +1,10 @@
 package Modulo2;
 
+import java.net.InetAddress;
+import java.util.concurrent.ConcurrentHashMap;
+
+import Modulo1.BlacklistManager;
+
 class Sirviente implements Runnable {
     private final java.net.Socket socket;
     private final MultiMap<String, String> mapa;
@@ -8,16 +13,33 @@ class Sirviente implements Runnable {
     private final int ns;
     private static java.util.concurrent.atomic.AtomicInteger nInstance = new java.util.concurrent.atomic.AtomicInteger();
 
-    Sirviente(java.net.Socket s, MultiMap<String, String> c) throws java.io.IOException {
+    private final InetAddress client;
+    private final BlacklistManager logins;
+    private static final ConcurrentHashMap<String, String> credenciales = new ConcurrentHashMap<>();
+    private boolean usrLogged;
+
+    static {
+        credenciales.put("hector", "1234");
+        credenciales.put("sdis","asdf");
+    }
+
+    Sirviente(java.net.Socket s, MultiMap<String, String> c, InetAddress client) throws java.io.IOException {
         this.socket = s;
         this.mapa = c;
         this.ns = nInstance.getAndIncrement();
         this.oos = new java.io.ObjectOutputStream(socket.getOutputStream());
         this.ois = new java.io.ObjectInputStream(socket.getInputStream());
+        this.logins = new BlacklistManager(2);
+        this.client = client;
+        this.usrLogged = false;
     }  //se invoca en el Servidor, usualmente
 
     public void run() {
         try {
+            MensajeProtocolo msBienvenida = new MensajeProtocolo(Primitiva.INFO);
+            oos.writeObject(msBienvenida);  //concentra la escritura de mensajes ¿bueno?
+            System.out.println("Sirviente: "+ns+": [RESP: "+msBienvenida+"]");
+
             while (true) {
                 String mensaje;  //String multipurpose
                 MensajeProtocolo me = (MensajeProtocolo) ois.readObject();
@@ -27,10 +49,25 @@ class Sirviente implements Runnable {
 
                 switch (me.getPrimitiva()) {
                 case INFO:
-                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
+                    ms = new MensajeProtocolo(Primitiva.INFO);
                 break;
                 case XAUTH:
-                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
+                    String usr = me.getMensaje();
+                    String pswd = me.getIdCola();
+                    
+                    if (logins.isIPBlocked(client.getHostAddress())){
+                        ms = new MensajeProtocolo(Primitiva.ERROR, "Err Max Number of login attempts reached.");
+                    }
+
+                    if (validateCredentials(usr,pswd)){
+                        this.usrLogged = true;
+                        ms = new MensajeProtocolo(Primitiva.XAUTH, "User successfully logged");
+                    }
+                    else{
+                        logins.incrementCount(client.getHostAddress());
+                        ms = new MensajeProtocolo(Primitiva.NOTAUTH, "Err 401 ~ Credentials DO NOT MATCH. Try again" );
+                    }
+
                 break;
                 case ADD2L:
                     mapa.push(me.getIdCola(), me.getMensaje());
@@ -86,5 +123,11 @@ class Sirviente implements Runnable {
                 System.err.println("Sirviente: "+ns+": [ERR Cerrando sockets]");
             }
         }
+    }
+
+    private static boolean validateCredentials(String username, String password) {
+        // Verifica si las credenciales proporcionadas coinciden con las almacenadas
+        String storedPassword = credenciales.get(username);
+        return storedPassword != null && storedPassword.equals(password);
     }
 }

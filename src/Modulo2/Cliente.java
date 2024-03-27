@@ -12,12 +12,18 @@ public class Cliente {
             //Creación de los canales de serialización de objetos
             oos = new java.io.ObjectOutputStream(sock.getOutputStream());
             ois = new java.io.ObjectInputStream(sock.getInputStream());
+            
+            // Espera la bienvenida del servidor
+            MensajeProtocolo me = (MensajeProtocolo) ois.readObject();
+            System.out.println("< "+ me.getMensaje());
+
+            
             //Sin teclado, probemos las primitivas por programa
             System.out.println("Pulsa <Enter> para comenzar"); System.in.read();
             //INICIO Escenario 1
-            //pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.XAUTH,"Hector 1234"));
-
-            pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.ADD2L,"Lista1", "Esclava remix"));
+            pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.XAUTH,"Hector", "1234"));
+            pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.XAUTH,"hector", "1234"));
+            //pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.ADD2L,"Lista1", "Esclava remix"));
 
 
             //a estas alguras algún cliente externo debería insertar un mensaje en la cola
@@ -42,6 +48,6 @@ public class Cliente {
         System.out.println("> "+mp);
         oos.writeObject(mp);
         System.out.println("< "+(MensajeProtocolo) ois.readObject());
-        System.out.println("Pulsa <Enter>"); System.in.read();
+        System.out.println("\nPulsa <Enter>"); System.in.read();
     }
 }

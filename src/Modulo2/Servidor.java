@@ -1,5 +1,7 @@
 package Modulo2;
 
+import java.net.InetAddress;
+
 public class Servidor {
     public static void main(String args[]) {
     int PUERTO = 2000;    //puerto de servicio
@@ -18,8 +20,9 @@ public class Servidor {
                 //WHILE
                 while (true) {
                     java.net.Socket socket = sock.accept();
+                    InetAddress client = sock.getInetAddress();
                     try {
-                        Sirviente serv = new Sirviente(socket, mapa);
+                        Sirviente serv = new Sirviente(socket, mapa, client);
                         exec.execute(serv);
                     } catch (java.io.IOException ioe) {
                         System.out.println("Servidor: WHILE [ERR ObjectStreams]");
