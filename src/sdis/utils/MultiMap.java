@@ -1,4 +1,4 @@
-package Modulo2;
+package sdis.utils;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;

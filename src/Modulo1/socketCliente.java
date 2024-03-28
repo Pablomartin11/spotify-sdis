@@ -7,7 +7,7 @@ public class socketCliente {
         try{
             java.io.BufferedReader tec =  new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
 
-            java.net.Socket miSocket = new java.net.Socket("localhost",PUERTO);
+            java.net.Socket miSocket = new java.net.Socket("10.133.4.142",PUERTO);
 
             java.io.BufferedReader inred = new java.io.BufferedReader(new java.io.InputStreamReader(miSocket.getInputStream()));
             java.io.PrintStream outred = new java.io.PrintStream(miSocket.getOutputStream());

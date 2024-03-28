@@ -1,3 +1,3 @@
-package Modulo2;
+package sdis.spotify.common;
 
 public class MalMensajeProtocoloException extends Exception {}

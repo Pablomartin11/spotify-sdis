@@ -1,4 +1,4 @@
-package Modulo2;
+package sdis.spotify.common;
 
 public enum Primitiva {
     INFO,

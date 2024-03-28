@@ -1,4 +1,4 @@
-package Modulo2;
+package sdis.spotify.common;
 
 public class MensajeProtocolo implements java.io.Serializable {
     private final Primitiva primitiva;
