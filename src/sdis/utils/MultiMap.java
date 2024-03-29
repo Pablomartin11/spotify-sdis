@@ -24,4 +24,24 @@ public class MultiMap<K, T> {
         ConcurrentLinkedQueue<T> cola = map.get(clave);
         return (null != cola) ? cola.poll() : null ;
     }
+
+    // Método para verificar si una clave existe en el mapa
+    public boolean containsKey(K key) {
+        return map.containsKey(key);
+    }
+
+    /*
+        Metodo para eliminar una clave y sus valores asociados
+
+        Devuelve true si consigue borrar y false sino consigue borrar
+     */
+
+    public boolean remove(K key) {
+        boolean valor = false;
+        ConcurrentLinkedQueue<T> m = map.remove(key);
+        if (m != null){
+            valor = true;
+        }
+        return valor;
+    }
 }

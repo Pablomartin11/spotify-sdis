@@ -1,7 +1,12 @@
 package sdis.spotify.server;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import Modulo1.BlacklistManager;
 import sdis.utils.MultiMap;
@@ -10,12 +15,12 @@ import sdis.spotify.common.MensajeProtocolo;
 import sdis.spotify.common.Primitiva;
 
 class Sirviente implements Runnable {
-    private final java.net.Socket socket;
+    private final Socket socket;
     private final MultiMap<String, String> mapa;
-    private final java.io.ObjectOutputStream oos;
-    private final java.io.ObjectInputStream ois;
+    private final ObjectOutputStream oos;
+    private final ObjectInputStream ois;
     private final int ns;
-    private static java.util.concurrent.atomic.AtomicInteger nInstance = new java.util.concurrent.atomic.AtomicInteger();
+    private static AtomicInteger nInstance = new AtomicInteger();
 
     private final InetAddress client;
     private final BlacklistManager logins;
@@ -27,12 +32,12 @@ class Sirviente implements Runnable {
         credenciales.put("sdis","asdf");
     }
 
-    Sirviente(java.net.Socket s, MultiMap<String, String> c, InetAddress client) throws java.io.IOException {
+    Sirviente(Socket s, MultiMap<String, String> c, InetAddress client) throws IOException {
         this.socket = s;
         this.mapa = c;
         this.ns = nInstance.getAndIncrement();
-        this.oos = new java.io.ObjectOutputStream(socket.getOutputStream());
-        this.ois = new java.io.ObjectInputStream(socket.getInputStream());
+        this.oos = new ObjectOutputStream(socket.getOutputStream());
+        this.ois = new ObjectInputStream(socket.getInputStream());
         this.logins = new BlacklistManager(2);
         this.client = client;
         this.usrLogged = false;
@@ -47,7 +52,7 @@ class Sirviente implements Runnable {
             while (true) {
                 String mensaje;  //String multipurpose
                 MensajeProtocolo me = (MensajeProtocolo) ois.readObject();
-                MensajeProtocolo ms;
+                MensajeProtocolo ms = null;
                 //me y ms: mensajes entrante y saliente
                 System.out.println("Sirviente: "+ns+": [ME: "+ me+"]");  //depuracion me
 
@@ -77,43 +82,58 @@ class Sirviente implements Runnable {
                     if (this.usrLogged){
                         String key = me.getIdCola();
                         String val = me.getMensaje();
-                        mapa.push(key, val);
                         synchronized (mapa) {
-                            mapa.notify();
-                        }  // despierta un sirviente esperando en un bloqueo de "mapa"
+                            mapa.push(key, val);
+                        }
                         ms = new MensajeProtocolo(Primitiva.ADDED);
                     }
                     else ms = new MensajeProtocolo(Primitiva.NOTAUTH,"User login is required");
                 break;
                 case READL:
-                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
+                    if(this.usrLogged){
+                        String key = me.getIdCola();
+                        String men = null;
+                        synchronized (mapa) {
+                            men = mapa.pop(key);
+                        }
+                        if( null != men ){
+                            ms = new MensajeProtocolo(Primitiva.MEDIA, men);
+                        }else {
+                            ms = new MensajeProtocolo(Primitiva.EMPTY);
+                        }
+                    }
+                    else ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
                 break;
-                case MEDIA:
-                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
-                break;
-                case EMPTY:
-                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
-                break;
+
                 case DELETEL:
-                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
+                    if(this.usrLogged){
+                        String key = me.getIdCola();
+                        boolean valor = false;
+                        //Se comprueba que la clave existe
+                        if(mapa.containsKey(key)){
+                            synchronized (mapa) {
+                                valor = mapa.remove(key);
+                                ms = new MensajeProtocolo(Primitiva.DELETED);
+                            }
+                        }else {
+                            ms = new MensajeProtocolo(Primitiva.EMPTY);
+                        }
+                        if(!valor){ // Sino se consigue eliminar
+                            ms = new MensajeProtocolo(Primitiva.EMPTY);
+                        }
+
+                    } else ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
                 break;
-                case DELETED:
-                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
-                break;
-                case NOTAUTH:
-                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
-                break;
-                case ERROR:
-                    ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
-                break;
+
                 default:
-                    ms = new MensajeProtocolo(Primitiva.ERROR);
+                    //TODO no se que error poner aqui
+                    ms = new MensajeProtocolo(Primitiva.ERROR,"Err ");
                 }  //fin del selector segun el mensaje entrante
                 oos.writeObject(ms);  //concentra la escritura de mensajes ¿bueno?
                 //depuracion de mensaje saliente
                 System.out.println("Sirviente: "+ns+": [RESP: "+ms+"]");
             }
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             System.err.println("Sirviente: "+ns+": [FIN]");
         } catch (ClassNotFoundException ex) {
             System.err.println("Sirviente: "+ns+": [ERR Class not found]");
