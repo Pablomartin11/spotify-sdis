@@ -40,7 +40,7 @@ class Sirviente implements Runnable {
 
     public void run() {
         try {
-            MensajeProtocolo msBienvenida = new MensajeProtocolo(Primitiva.INFO);
+            MensajeProtocolo msBienvenida = new MensajeProtocolo(Primitiva.INFO, "Welcome, please type your credentials to LOG in");
             oos.writeObject(msBienvenida);  //concentra la escritura de mensajes ¿bueno?
             System.out.println("Sirviente: "+ns+": [RESP: "+msBienvenida+"]");
 
@@ -53,11 +53,11 @@ class Sirviente implements Runnable {
 
                 switch (me.getPrimitiva()) {
                 case INFO:
-                    ms = new MensajeProtocolo(Primitiva.INFO);
+                    ms = new MensajeProtocolo(Primitiva.INFO, "Welcome, please type your credentials to LOG in");
                 break;
                 case XAUTH:
-                    String usr = me.getMensaje();
-                    String pswd = me.getIdCola();
+                    String usr = me.getIdCola();
+                    String pswd = me.getMensaje();
                     
                     if (logins.isIPBlocked(client.getHostAddress())){
                         ms = new MensajeProtocolo(Primitiva.ERROR, "Err Max Number of login attempts reached.");
@@ -74,11 +74,16 @@ class Sirviente implements Runnable {
 
                 break;
                 case ADD2L:
-                    mapa.push(me.getIdCola(), me.getMensaje());
-                    synchronized (mapa) {
-                        mapa.notify();
-                    }  // despierta un sirviente esperando en un bloqueo de "mapa"
-                    ms = new MensajeProtocolo(Primitiva.ADD2L);
+                    if (this.usrLogged){
+                        String key = me.getIdCola();
+                        String val = me.getMensaje();
+                        mapa.push(key, val);
+                        synchronized (mapa) {
+                            mapa.notify();
+                        }  // despierta un sirviente esperando en un bloqueo de "mapa"
+                        ms = new MensajeProtocolo(Primitiva.ADDED);
+                    }
+                    else ms = new MensajeProtocolo(Primitiva.NOTAUTH,"User login is required");
                 break;
                 case READL:
                     ms = new MensajeProtocolo(Primitiva.XAUTH, "["+ns+":"+socket+"]");
@@ -134,4 +139,5 @@ class Sirviente implements Runnable {
         String storedPassword = credenciales.get(username);
         return storedPassword != null && storedPassword.equals(password);
     }
+
 }
