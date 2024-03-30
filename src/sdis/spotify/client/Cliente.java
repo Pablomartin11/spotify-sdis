@@ -19,7 +19,7 @@ public class Cliente {
             
             // Espera la bienvenida del servidor
             MensajeProtocolo me = (MensajeProtocolo) ois.readObject();
-            System.out.println("< "+ me.getMensaje());
+            System.out.println("\n< "+ me.getMensaje());
 
             
             //Sin teclado, probemos las primitivas por programa
