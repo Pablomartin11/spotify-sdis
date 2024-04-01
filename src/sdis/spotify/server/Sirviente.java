@@ -8,7 +8,7 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import Modulo1.BlacklistManager;
+import sdis.utils.BlacklistManager;
 import sdis.utils.MultiMap;
 import sdis.spotify.common.MalMensajeProtocoloException;
 import sdis.spotify.common.MensajeProtocolo;

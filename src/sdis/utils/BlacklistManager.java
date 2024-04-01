@@ -1,4 +1,4 @@
-package Modulo1;
+package sdis.utils;
 
 import java.util.concurrent.ConcurrentHashMap;
 public class BlacklistManager {
