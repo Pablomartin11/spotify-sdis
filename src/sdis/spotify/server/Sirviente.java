@@ -65,92 +65,88 @@ class Sirviente implements Runnable {
             oos.writeObject(msFirst);  //concentra la escritura de mensajes ¿bueno?
             System.out.println("Sirviente: "+ns+": [RESP: "+msFirst+"]");
 
-            while (true) {
+            while (true && !this.banned) {
                 MensajeProtocolo me = (MensajeProtocolo) ois.readObject();
                 MensajeProtocolo ms = null;
                 //me y ms: mensajes entrante y saliente
                 System.out.println("Sirviente: "+ns+": [ME: "+ me+"]");  //depuracion me
 
-                if (this.banned){
-                    ms = new MensajeProtocolo(Primitiva.NOTAUTH, "Err Max Number of connections reached.");
-                }
-                else{
-                    switch (me.getPrimitiva()) {
-                    case INFO:
-                        ms = new MensajeProtocolo(Primitiva.INFO, "Welcome, please type your credentials to LOG in");
-                    break;
-                    case XAUTH:
-                        String usr = me.getIdCola();
-                        String pswd = me.getMensaje();
-                        
-                        if (logins.isIPBlocked(this.client.getHostAddress())){
-                            ms = new MensajeProtocolo(Primitiva.ERROR, "Err Max Number of login attempts reached.");
+                switch (me.getPrimitiva()) {
+                case INFO:
+                    ms = new MensajeProtocolo(Primitiva.INFO, "Welcome, please type your credentials to LOG in");
+                break;
+                case XAUTH:
+                    String usr = me.getIdCola();
+                    String pswd = me.getMensaje();
+                    
+                    if (logins.isIPBlocked(this.client.getHostAddress())){
+                        ms = new MensajeProtocolo(Primitiva.ERROR, "Err Max Number of login attempts reached.");
+                    }
+                    else {
+                        if (validateCredentials(usr,pswd)){
+                            this.usrLogged = true;
+                            ms = new MensajeProtocolo(Primitiva.XAUTH, "User successfully logged");
+                            logins.resetCount(this.client.getHostAddress());
                         }
-                        else {
-                            if (validateCredentials(usr,pswd)){
-                                this.usrLogged = true;
-                                ms = new MensajeProtocolo(Primitiva.XAUTH, "User successfully logged");
-                                logins.resetCount(this.client.getHostAddress());
-                            }
-                            else{
-                                logins.incrementCount(this.client.getHostAddress());
-                                ms = new MensajeProtocolo(Primitiva.NOTAUTH, "Err 401 ~ Credentials DO NOT MATCH. Try again" );
-                            }
+                        else{
+                            logins.incrementCount(this.client.getHostAddress());
+                            ms = new MensajeProtocolo(Primitiva.NOTAUTH, "Err 401 ~ Credentials DO NOT MATCH. Try again" );
                         }
+                    }
 
-                    break;
-                    case ADD2L:
-                        if (this.usrLogged){
-                            String key = me.getIdCola();
-                            String val = me.getMensaje();
+                break;
+                case ADD2L:
+                    if (this.usrLogged){
+                        String key = me.getIdCola();
+                        String val = me.getMensaje();
+                        synchronized (mapa) {
+                            mapa.push(key, val);
+                        }
+                        ms = new MensajeProtocolo(Primitiva.ADDED);
+                    }
+                    else ms = new MensajeProtocolo(Primitiva.NOTAUTH,"User login is required");
+                break;
+                case READL:
+                    if(this.usrLogged){
+                        String key = me.getIdCola();
+                        String men = null;
+                        synchronized (mapa) {
+                            men = mapa.pop(key);
+                        }
+                        if( null != men ){
+                            ms = new MensajeProtocolo(Primitiva.MEDIA, men);
+                        }else {
+                            ms = new MensajeProtocolo(Primitiva.EMPTY);
+                        }
+                    }
+                    else ms = new MensajeProtocolo(Primitiva.NOTAUTH,"User login is required");
+                break;
+
+                case DELETEL:
+                    if(this.usrLogged){
+                        String key = me.getIdCola();
+                        boolean valor = false;
+                        //Se comprueba que la clave existe
+                        if(mapa.containsKey(key)){
                             synchronized (mapa) {
-                                mapa.push(key, val);
+                                valor = mapa.remove(key);
+                                ms = new MensajeProtocolo(Primitiva.DELETED);
                             }
-                            ms = new MensajeProtocolo(Primitiva.ADDED);
+                        }else {
+                            ms = new MensajeProtocolo(Primitiva.EMPTY);
                         }
-                        else ms = new MensajeProtocolo(Primitiva.NOTAUTH,"User login is required");
-                    break;
-                    case READL:
-                        if(this.usrLogged){
-                            String key = me.getIdCola();
-                            String men = null;
-                            synchronized (mapa) {
-                                men = mapa.pop(key);
-                            }
-                            if( null != men ){
-                                ms = new MensajeProtocolo(Primitiva.MEDIA, men);
-                            }else {
-                                ms = new MensajeProtocolo(Primitiva.EMPTY);
-                            }
+                        if(!valor){ // Sino se consigue eliminar
+                            ms = new MensajeProtocolo(Primitiva.EMPTY);
                         }
-                        else ms = new MensajeProtocolo(Primitiva.NOTAUTH,"User login is required");
-                    break;
 
-                    case DELETEL:
-                        if(this.usrLogged){
-                            String key = me.getIdCola();
-                            boolean valor = false;
-                            //Se comprueba que la clave existe
-                            if(mapa.containsKey(key)){
-                                synchronized (mapa) {
-                                    valor = mapa.remove(key);
-                                    ms = new MensajeProtocolo(Primitiva.DELETED);
-                                }
-                            }else {
-                                ms = new MensajeProtocolo(Primitiva.EMPTY);
-                            }
-                            if(!valor){ // Sino se consigue eliminar
-                                ms = new MensajeProtocolo(Primitiva.EMPTY);
-                            }
+                    } 
+                    else ms = new MensajeProtocolo(Primitiva.NOTAUTH,"User login is required");
+                break;
 
-                        } 
-                        else ms = new MensajeProtocolo(Primitiva.NOTAUTH,"User login is required");
-                    break;
-
-                    default:
-                        ms = new MensajeProtocolo(Primitiva.ERROR,"Err Not Understand ");
-                    }  //fin del selector segun el mensaje entrante
-                }
+                default:
+                    ms = new MensajeProtocolo(Primitiva.ERROR,"Err Not Understand ");
+                }  //fin del selector segun el mensaje entrante
+            
                 oos.writeObject(ms);  //concentra la escritura de mensajes ¿bueno?
                 //depuracion de mensaje saliente
                 System.out.println("Sirviente: "+ns+": [RESP: "+ms+"]");
@@ -166,6 +162,12 @@ class Sirviente implements Runnable {
             System.err.println("Sirviente: "+ns+": [ERR MalMensajeProtocolo ]");
         } finally {
         //seguimos deshaciéndonos de los sockets y canales abiertos.
+
+        // Quitamos una conexion del contador si no está baneado, si lo estuviera, solo por el mero hecho de intentar la conexión, aunque le eche, seguiria restando uno y habria un fallo de seguridad
+        if (!this.banned){
+            this.conections.decrementCount(this.client.getHostAddress());
+        }
+        
         try {
             ois.close();
             oos.close();

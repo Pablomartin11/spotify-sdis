@@ -44,5 +44,12 @@ public class BlacklistManager {
     public int getCount(String ip){
         return blackListMap.get(ip);
     }
+
+    public void decrementCount(String hostAddress) {
+        if (blackListMap.containsKey(hostAddress)){
+            blackListMap.put(hostAddress, blackListMap.get(hostAddress)-1);
+        }
+        else blackListMap.put(hostAddress,0);
+    }
 }
 
