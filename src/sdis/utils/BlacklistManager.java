@@ -28,7 +28,7 @@ public class BlacklistManager {
      * Increments the specific count in one unit.
      * @param ip we want to increment de count.
      */
-    public void incrementCount(String ip) {
+    public synchronized void incrementCount(String ip) {
         blackListMap.put(ip, blackListMap.getOrDefault(ip, 0) + 1);
         System.out.println("Contador incrementado en 1 para: "+ip);
     }
@@ -37,7 +37,7 @@ public class BlacklistManager {
      * "Resets the count to zero" or removes the specific IP from the blackList
      * @param ip we want to remove.
      */
-    public void resetCount(String ip) {
+    public synchronized void resetCount(String ip) {
         blackListMap.remove(ip);
     }
 
@@ -45,7 +45,7 @@ public class BlacklistManager {
         return blackListMap.get(ip);
     }
 
-    public void decrementCount(String hostAddress) {
+    public synchronized void decrementCount(String hostAddress) {
         if (blackListMap.containsKey(hostAddress)){
             blackListMap.put(hostAddress, blackListMap.get(hostAddress)-1);
         }

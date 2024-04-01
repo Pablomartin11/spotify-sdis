@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class MultiMap<K, T> {
     private final ConcurrentMap<K, ConcurrentLinkedQueue<T>>  map = new ConcurrentHashMap<K, ConcurrentLinkedQueue<T>> ();
 
-    public void push(K clave, T valor) {
+    public synchronized void push(K clave, T valor) {
         java.util.Queue<T> cola = map.get(clave);
         if (null == cola) {
         //putIfAbsent es atómica pero requiere "nueva", y es costoso
@@ -36,7 +36,7 @@ public class MultiMap<K, T> {
         Devuelve true si consigue borrar y false sino consigue borrar
      */
 
-    public boolean remove(K key) {
+    public synchronized boolean remove(K key) {
         boolean valor = false;
         ConcurrentLinkedQueue<T> m = map.remove(key);
         if (m != null){

@@ -56,9 +56,7 @@ class Sirviente implements Runnable {
                 this.banned = true;
             } 
             else {
-                synchronized(conections){
-                    conections.incrementCount(this.client.getHostAddress());
-                }
+                conections.incrementCount(this.client.getHostAddress());
                 msFirst = new MensajeProtocolo(Primitiva.INFO, "Welcome, please type your credentials to LOG in");
             }
 
@@ -99,9 +97,7 @@ class Sirviente implements Runnable {
                     if (this.usrLogged){
                         String key = me.getIdCola();
                         String val = me.getMensaje();
-                        synchronized (mapa) {
-                            mapa.push(key, val);
-                        }
+                        mapa.push(key, val);
                         ms = new MensajeProtocolo(Primitiva.ADDED);
                     }
                     else ms = new MensajeProtocolo(Primitiva.NOTAUTH,"User login is required");
@@ -110,9 +106,7 @@ class Sirviente implements Runnable {
                     if(this.usrLogged){
                         String key = me.getIdCola();
                         String men = null;
-                        synchronized (mapa) {
-                            men = mapa.pop(key);
-                        }
+                        men = mapa.pop(key);
                         if( null != men ){
                             ms = new MensajeProtocolo(Primitiva.MEDIA, men);
                         }else {
@@ -128,10 +122,8 @@ class Sirviente implements Runnable {
                         boolean valor = false;
                         //Se comprueba que la clave existe
                         if(mapa.containsKey(key)){
-                            synchronized (mapa) {
-                                valor = mapa.remove(key);
-                                ms = new MensajeProtocolo(Primitiva.DELETED);
-                            }
+                            valor = mapa.remove(key);
+                            ms = new MensajeProtocolo(Primitiva.DELETED);
                         }else {
                             ms = new MensajeProtocolo(Primitiva.EMPTY);
                         }
