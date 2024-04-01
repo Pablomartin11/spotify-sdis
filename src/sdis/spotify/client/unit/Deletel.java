@@ -1,17 +1,17 @@
-package sdis.spotify.client.uniit;
+package sdis.spotify.client.unit;
 
 import sdis.spotify.common.MalMensajeProtocoloException;
 import sdis.spotify.common.MensajeProtocolo;
 import sdis.spotify.common.Primitiva;
 
-public class Readl {
+public class Deletel {
     final private int PUERTO = 2000;
     static java.io.ObjectInputStream ois = null;
     static java.io.ObjectOutputStream oos = null;
 
     public static void main(String[] args) throws java.io.IOException {
         if (args.length != 2) {
-            System.out.println("Use:\njava protocol.cliente.READL host clave valor");
+            System.out.println("Use:\njava protocol.cliente.DELETEL clave ");
             System.exit(-1);
         }
         String host = args[0];  //localhost o ip|dn del servidor
@@ -24,7 +24,7 @@ public class Readl {
             System.out.println("<" + (MensajeProtocolo) ois.readObject());
             pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.XAUTH, "hector", "1234"));
 
-            pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.READL, clave));
+            pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.DELETEL, clave));
         } catch (java.io.EOFException e) {
             System.err.println("Cliente: Fin de conexión.");
         } catch (java.io.IOException e) {
