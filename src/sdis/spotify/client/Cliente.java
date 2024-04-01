@@ -26,6 +26,8 @@ public class Cliente {
             System.out.println("Pulsa <Enter> para comenzar"); System.in.read();
             //INICIO Escenario 1
             pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.XAUTH,"Hector", "1234"));
+            pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.XAUTH,"Hector", "1234"));
+            //pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.XAUTH,"Hector", "1234"));
             pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.XAUTH,"hector", "1234"));
             pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.ADD2L,"Lista1", "Esclava remix"));
 

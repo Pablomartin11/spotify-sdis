@@ -1,5 +1,6 @@
 package sdis.spotify.server;
 
+import sdis.utils.BlacklistManager;
 import sdis.utils.MultiMap;
 
 import java.net.InetAddress;
@@ -11,6 +12,7 @@ public class Servidor {
     java.util.concurrent.ExecutorService exec = java.util.concurrent.Executors.newFixedThreadPool(NThreads);
 
     MultiMap<String, String> mapa = new MultiMap<>();
+    BlacklistManager conectionsBlacklistManager = new BlacklistManager(3);
 
     try {
         java.net.ServerSocket sock = new java.net.ServerSocket(PUERTO);
@@ -24,7 +26,7 @@ public class Servidor {
                     java.net.Socket socket = sock.accept();
                     InetAddress client = sock.getInetAddress();
                     try {
-                        Sirviente serv = new Sirviente(socket, mapa, client);
+                        Sirviente serv = new Sirviente(socket, mapa, client, conectionsBlacklistManager);
                         exec.execute(serv);
                     } catch (java.io.IOException ioe) {
                         System.out.println("Servidor: WHILE [ERR ObjectStreams]");

@@ -21,7 +21,7 @@ public class BlacklistManager {
      * @return boolean
      */
     public boolean isIPBlocked(String ip) {
-        return blackListMap.containsKey(ip) && blackListMap.get(ip) > max;
+        return blackListMap.containsKey(ip) && blackListMap.get(ip) >= max;
     }
 
     /**
@@ -39,6 +39,10 @@ public class BlacklistManager {
      */
     public void resetCount(String ip) {
         blackListMap.remove(ip);
+    }
+
+    public int getCount(String ip){
+        return blackListMap.get(ip);
     }
 }
 

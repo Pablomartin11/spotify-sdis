@@ -24,7 +24,7 @@ class Sirviente implements Runnable {
 
     private final InetAddress client;
     private final BlacklistManager logins;
-    private final BlacklistManager conexions;
+    private final BlacklistManager conections;
     private static final ConcurrentHashMap<String, String> credenciales = new ConcurrentHashMap<>();
     private boolean usrLogged;
     private boolean banned;
@@ -34,28 +34,31 @@ class Sirviente implements Runnable {
         credenciales.put("sdis","asdf");
     }
 
-    Sirviente(Socket s, MultiMap<String, String> c, InetAddress client) throws IOException {
+    Sirviente(Socket s, MultiMap<String, String> c, InetAddress client, BlacklistManager conectionsBlacklistManager) throws IOException {
         this.socket = s;
         this.mapa = c;
         this.ns = nInstance.getAndIncrement();
         this.oos = new ObjectOutputStream(socket.getOutputStream());
         this.ois = new ObjectInputStream(socket.getInputStream());
         this.logins = new BlacklistManager(2);
-        this.conexions = new BlacklistManager(3);
+        this.conections = conectionsBlacklistManager;
         this.client = client;
         this.usrLogged = false;
         this.banned = false;
+
     }  //se invoca en el Servidor, usualmente
 
     public void run() {
         try {
             MensajeProtocolo msFirst;
-            if (conexions.isIPBlocked(client.getHostAddress())){
+            if (conections.isIPBlocked(this.client.getHostAddress())){
                 msFirst = new MensajeProtocolo(Primitiva.NOTAUTH, "Err Max Number of connections reached.");
                 this.banned = true;
             } 
             else {
-                conexions.incrementCount(client.getHostAddress());
+                synchronized(conections){
+                    conections.incrementCount(this.client.getHostAddress());
+                }
                 msFirst = new MensajeProtocolo(Primitiva.INFO, "Welcome, please type your credentials to LOG in");
             }
 
@@ -63,7 +66,6 @@ class Sirviente implements Runnable {
             System.out.println("Sirviente: "+ns+": [RESP: "+msFirst+"]");
 
             while (true) {
-                String mensaje;  //String multipurpose
                 MensajeProtocolo me = (MensajeProtocolo) ois.readObject();
                 MensajeProtocolo ms = null;
                 //me y ms: mensajes entrante y saliente
@@ -81,18 +83,19 @@ class Sirviente implements Runnable {
                         String usr = me.getIdCola();
                         String pswd = me.getMensaje();
                         
-                        if (logins.isIPBlocked(client.getHostAddress())){
+                        if (logins.isIPBlocked(this.client.getHostAddress())){
                             ms = new MensajeProtocolo(Primitiva.ERROR, "Err Max Number of login attempts reached.");
                         }
-
-                        if (validateCredentials(usr,pswd)){
-                            this.usrLogged = true;
-                            ms = new MensajeProtocolo(Primitiva.XAUTH, "User successfully logged");
-                            logins.resetCount(client.getHostAddress());
-                        }
-                        else{
-                            logins.incrementCount(client.getHostAddress());
-                            ms = new MensajeProtocolo(Primitiva.NOTAUTH, "Err 401 ~ Credentials DO NOT MATCH. Try again" );
+                        else {
+                            if (validateCredentials(usr,pswd)){
+                                this.usrLogged = true;
+                                ms = new MensajeProtocolo(Primitiva.XAUTH, "User successfully logged");
+                                logins.resetCount(this.client.getHostAddress());
+                            }
+                            else{
+                                logins.incrementCount(this.client.getHostAddress());
+                                ms = new MensajeProtocolo(Primitiva.NOTAUTH, "Err 401 ~ Credentials DO NOT MATCH. Try again" );
+                            }
                         }
 
                     break;
