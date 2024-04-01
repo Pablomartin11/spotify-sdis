@@ -24,6 +24,7 @@ class Sirviente implements Runnable {
 
     private final InetAddress client;
     private final BlacklistManager logins;
+    private final BlacklistManager conexions;
     private static final ConcurrentHashMap<String, String> credenciales = new ConcurrentHashMap<>();
     private boolean usrLogged;
     private boolean banned;
@@ -40,6 +41,7 @@ class Sirviente implements Runnable {
         this.oos = new ObjectOutputStream(socket.getOutputStream());
         this.ois = new ObjectInputStream(socket.getInputStream());
         this.logins = new BlacklistManager(2);
+        this.conexions = new BlacklistManager(3);
         this.client = client;
         this.usrLogged = false;
         this.banned = false;
@@ -48,11 +50,14 @@ class Sirviente implements Runnable {
     public void run() {
         try {
             MensajeProtocolo msFirst;
-            if (ns == 3){
+            if (conexions.isIPBlocked(client.getHostAddress())){
                 msFirst = new MensajeProtocolo(Primitiva.NOTAUTH, "Err Max Number of connections reached.");
                 this.banned = true;
             } 
-            else  msFirst = new MensajeProtocolo(Primitiva.INFO, "Welcome, please type your credentials to LOG in");
+            else {
+                conexions.incrementCount(client.getHostAddress());
+                msFirst = new MensajeProtocolo(Primitiva.INFO, "Welcome, please type your credentials to LOG in");
+            }
 
             oos.writeObject(msFirst);  //concentra la escritura de mensajes ¿bueno?
             System.out.println("Sirviente: "+ns+": [RESP: "+msFirst+"]");
@@ -83,6 +88,7 @@ class Sirviente implements Runnable {
                         if (validateCredentials(usr,pswd)){
                             this.usrLogged = true;
                             ms = new MensajeProtocolo(Primitiva.XAUTH, "User successfully logged");
+                            logins.resetCount(client.getHostAddress());
                         }
                         else{
                             logins.incrementCount(client.getHostAddress());
