@@ -1,10 +1,12 @@
 package sdis.spotify.server;
 
+import java.net.InetAddress;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -51,19 +53,19 @@ class Sirviente implements Runnable {
     public void run() {
         try {
             MensajeProtocolo msFirst;
-            if (conections.isIPBlocked(this.client.getHostAddress())){
+            if (conections.isIPBlocked(InetAddress.getByName(client.getHostAddress()))){
                 msFirst = new MensajeProtocolo(Primitiva.NOTAUTH, "Err Max Number of connections reached.");
                 this.banned = true;
-            } 
+            }
             else {
-                conections.incrementCount(this.client.getHostAddress());
+                conections.incrementCount(InetAddress.getByName(client.getHostAddress()));
                 msFirst = new MensajeProtocolo(Primitiva.INFO, "Welcome, please type your credentials to LOG in");
             }
 
             oos.writeObject(msFirst);  //concentra la escritura de mensajes ¿bueno?
             System.out.println("Sirviente: "+ns+": [RESP: "+msFirst+"]");
 
-            while (true && !this.banned) {
+            while (!this.banned) {
                 MensajeProtocolo me = (MensajeProtocolo) ois.readObject();
                 MensajeProtocolo ms = null;
                 //me y ms: mensajes entrante y saliente
@@ -77,17 +79,17 @@ class Sirviente implements Runnable {
                     String usr = me.getIdCola();
                     String pswd = me.getMensaje();
                     
-                    if (logins.isIPBlocked(this.client.getHostAddress())){
+                    if (logins.isIPBlocked(InetAddress.getByName(client.getHostAddress()))){
                         ms = new MensajeProtocolo(Primitiva.ERROR, "Err Max Number of login attempts reached.");
                     }
                     else {
                         if (validateCredentials(usr,pswd)){
                             this.usrLogged = true;
                             ms = new MensajeProtocolo(Primitiva.XAUTH, "User successfully logged");
-                            logins.resetCount(this.client.getHostAddress());
+                            logins.resetCount(InetAddress.getByName(client.getHostAddress()));
                         }
                         else{
-                            logins.incrementCount(this.client.getHostAddress());
+                            logins.incrementCount(InetAddress.getByName(client.getHostAddress()));
                             ms = new MensajeProtocolo(Primitiva.NOTAUTH, "Err 401 ~ Credentials DO NOT MATCH. Try again" );
                         }
                     }
@@ -157,7 +159,11 @@ class Sirviente implements Runnable {
 
         // Quitamos una conexion del contador si no está baneado, si lo estuviera, solo por el mero hecho de intentar la conexión, aunque le eche, seguiria restando uno y habria un fallo de seguridad
         if (!this.banned){
-            this.conections.decrementCount(this.client.getHostAddress());
+            try {
+                this.conections.decrementCount(InetAddress.getByName(client.getHostAddress()));
+            } catch (UnknownHostException e) {
+                throw new RuntimeException(e);
+            }
         }
         
         try {

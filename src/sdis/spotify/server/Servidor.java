@@ -12,7 +12,7 @@ public class Servidor {
     java.util.concurrent.ExecutorService exec = java.util.concurrent.Executors.newFixedThreadPool(NThreads);
 
     MultiMap<String, String> mapa = new MultiMap<>();
-    BlacklistManager conectionsBlacklistManager = new BlacklistManager(6);
+    BlacklistManager conectionsBlacklistManager = new BlacklistManager(3);
 
     try {
         java.net.ServerSocket sock = new java.net.ServerSocket(PUERTO);

@@ -29,7 +29,7 @@ public class socketServidor {
                     java.net.Socket sock = servidor.accept(); // ojito!! sin try-with-rc
 
                     InetAddress client = sock.getInetAddress();
-                    String clientIP = client.getHostAddress();
+                    InetAddress clientIP = InetAddress.getByAddress(client.getHostAddress().getBytes());
 
                     connectionBlacklistManager.incrementCount(clientIP);
                     if (connectionBlacklistManager.isIPBlocked(clientIP)) {
