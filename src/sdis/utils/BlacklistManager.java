@@ -31,7 +31,7 @@ public class BlacklistManager {
      */
     public synchronized void incrementCount(InetAddress ip) {
         blackListMap.put(ip, blackListMap.getOrDefault(ip, 0) + 1);
-        System.out.println("Contador incrementado en 1 para: "+ip);
+        System.out.println("Contador incrementado en 1 para: "+ip.getHostAddress());
     }
 
     /**
