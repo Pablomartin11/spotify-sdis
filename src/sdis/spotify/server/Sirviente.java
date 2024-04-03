@@ -4,7 +4,6 @@ import java.net.InetAddress;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,13 +35,13 @@ class Sirviente implements Runnable {
         credenciales.put("sdis","asdf");
     }
 
-    Sirviente(Socket s, MultiMap<String, String> c, InetAddress client, BlacklistManager conectionsBlacklistManager) throws IOException {
+    Sirviente(Socket s, MultiMap<String, String> c, InetAddress client, BlacklistManager conectionsBlacklistManager,BlacklistManager loginsBlackListManager) throws IOException {
         this.socket = s;
         this.mapa = c;
         this.ns = nInstance.getAndIncrement();
         this.oos = new ObjectOutputStream(socket.getOutputStream());
         this.ois = new ObjectInputStream(socket.getInputStream());
-        this.logins = new BlacklistManager(2);
+        this.logins = loginsBlackListManager;
         this.conections = conectionsBlacklistManager;
         this.client = client;
         this.usrLogged = false;
@@ -53,12 +52,12 @@ class Sirviente implements Runnable {
     public void run() {
         try {
             MensajeProtocolo msFirst;
-            if (conections.isIPBlocked(InetAddress.getByName(client.getHostAddress()))){
+            if (conections.isIPBlocked(client)){
                 msFirst = new MensajeProtocolo(Primitiva.NOTAUTH, "Err Max Number of connections reached.");
                 this.banned = true;
             }
             else {
-                conections.incrementCount(InetAddress.getByName(client.getHostAddress()));
+                conections.incrementCount(client);
                 msFirst = new MensajeProtocolo(Primitiva.INFO, "Welcome, please type your credentials to LOG in");
             }
 
@@ -79,17 +78,17 @@ class Sirviente implements Runnable {
                     String usr = me.getIdCola();
                     String pswd = me.getMensaje();
                     
-                    if (logins.isIPBlocked(InetAddress.getByName(client.getHostAddress()))){
+                    if (logins.isIPBlocked(client)){
                         ms = new MensajeProtocolo(Primitiva.ERROR, "Err Max Number of login attempts reached.");
                     }
                     else {
                         if (validateCredentials(usr,pswd)){
                             this.usrLogged = true;
                             ms = new MensajeProtocolo(Primitiva.XAUTH, "User successfully logged");
-                            logins.resetCount(InetAddress.getByName(client.getHostAddress()));
+                            logins.resetCount(client);
                         }
                         else{
-                            logins.incrementCount(InetAddress.getByName(client.getHostAddress()));
+                            logins.incrementCount(client);
                             ms = new MensajeProtocolo(Primitiva.NOTAUTH, "Err 401 ~ Credentials DO NOT MATCH. Try again" );
                         }
                     }
@@ -159,11 +158,7 @@ class Sirviente implements Runnable {
 
         // Quitamos una conexion del contador si no está baneado, si lo estuviera, solo por el mero hecho de intentar la conexión, aunque le eche, seguiria restando uno y habria un fallo de seguridad
         if (!this.banned){
-            try {
-                this.conections.decrementCount(InetAddress.getByName(client.getHostAddress()));
-            } catch (UnknownHostException e) {
-                throw new RuntimeException(e);
-            }
+            this.conections.decrementCount(client);
         }
         
         try {

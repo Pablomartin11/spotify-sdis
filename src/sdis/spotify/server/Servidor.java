@@ -13,6 +13,7 @@ public class Servidor {
 
     MultiMap<String, String> mapa = new MultiMap<>();
     BlacklistManager conectionsBlacklistManager = new BlacklistManager(3);
+    BlacklistManager loginsBlackListManager = new BlacklistManager(2);
 
     try {
         java.net.ServerSocket sock = new java.net.ServerSocket(PUERTO);
@@ -26,7 +27,7 @@ public class Servidor {
                     java.net.Socket socket = sock.accept();
                     InetAddress client = sock.getInetAddress();
                     try {
-                        Sirviente serv = new Sirviente(socket, mapa, client, conectionsBlacklistManager);
+                        Sirviente serv = new Sirviente(socket, mapa, client, conectionsBlacklistManager, loginsBlackListManager);
                         exec.execute(serv);
                     } catch (java.io.IOException ioe) {
                         System.out.println("Servidor: WHILE [ERR ObjectStreams]");
