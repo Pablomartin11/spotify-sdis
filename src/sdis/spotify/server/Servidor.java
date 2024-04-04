@@ -1,5 +1,6 @@
 package sdis.spotify.server;
 
+import sdis.spotify.common.Strings;
 import sdis.utils.BlacklistManager;
 import sdis.utils.MultiMap;
 
@@ -18,7 +19,7 @@ public class Servidor {
     try {
         java.net.ServerSocket sock = new java.net.ServerSocket(PUERTO);
 
-        System.err.println("Servidor: WHILE [INICIANDO]");
+        System.err.println(Strings.INICIANDO_SERVIDOR);
 
         Thread mainServer = new Thread(() -> {
             try {

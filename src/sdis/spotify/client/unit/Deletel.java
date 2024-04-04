@@ -3,6 +3,7 @@ package sdis.spotify.client.unit;
 import sdis.spotify.common.MalMensajeProtocoloException;
 import sdis.spotify.common.MensajeProtocolo;
 import sdis.spotify.common.Primitiva;
+import sdis.spotify.common.Strings;
 
 public class Deletel {
     final private int PUERTO = 2000;
@@ -26,13 +27,13 @@ public class Deletel {
 
             pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.DELETEL, clave));
         } catch (java.io.EOFException e) {
-            System.err.println("Cliente: Fin de conexión.");
+            System.err.println(Strings.ERROR_FINCONEXION);
         } catch (java.io.IOException e) {
-            System.err.println("Cliente: Error de apertura o E/S sobre objetos:"+e);
+            System.err.println(Strings.ERROR_APERTURA_ES+e);
         } catch (MalMensajeProtocoloException e) {
-            System.err.println("Cliente: Error mensaje Protocolo: "+e);
+            System.err.println(Strings.ERROR_MALMENSAJEPROTOCOLO+e);
         } catch (Exception e) {
-            System.err.println("Cliente: Excepción. Cerrando Sockets: "+e);
+            System.err.println(Strings.ERROR_EXCEPCION+e);
         } finally {
             ois.close();
             oos.close();
