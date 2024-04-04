@@ -27,13 +27,13 @@ public class Deletel {
 
             pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.DELETEL, clave));
         } catch (java.io.EOFException e) {
-            System.err.println(Strings.ERROR_FINCONEXION);
+            System.err.println(Strings.ERRORC_FINCONEXION);
         } catch (java.io.IOException e) {
-            System.err.println(Strings.ERROR_APERTURA_ES+e);
+            System.err.println(Strings.ERRORC_APERTURA_ES +e);
         } catch (MalMensajeProtocoloException e) {
-            System.err.println(Strings.ERROR_MALMENSAJEPROTOCOLO+e);
+            System.err.println(Strings.ERRORC_MALMENSAJEPROTOCOLO +e);
         } catch (Exception e) {
-            System.err.println(Strings.ERROR_EXCEPCION+e);
+            System.err.println(Strings.ERRORC_EXCEPCION +e);
         } finally {
             ois.close();
             oos.close();

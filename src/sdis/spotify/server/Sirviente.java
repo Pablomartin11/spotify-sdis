@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import sdis.spotify.common.Strings;
 import sdis.utils.BlacklistManager;
 import sdis.utils.MultiMap;
 import sdis.spotify.common.MalMensajeProtocoloException;
@@ -53,12 +54,12 @@ class Sirviente implements Runnable {
         try {
             MensajeProtocolo msFirst;
             if (conections.isIPBlocked(client)){
-                msFirst = new MensajeProtocolo(Primitiva.NOTAUTH, "Err Max Number of connections reached.");
+                msFirst = new MensajeProtocolo(Primitiva.NOTAUTH, Strings.ERROR_MAX_CONNECIONS);
                 this.banned = true;
             }
             else {
                 conections.incrementCount(client);
-                msFirst = new MensajeProtocolo(Primitiva.INFO, "Welcome, please type your credentials to LOG in");
+                msFirst = new MensajeProtocolo(Primitiva.INFO, Strings.MENSAJE_INICIO);
             }
 
             oos.writeObject(msFirst);  //concentra la escritura de mensajes ¿bueno?
@@ -72,24 +73,24 @@ class Sirviente implements Runnable {
 
                 switch (me.getPrimitiva()) {
                 case INFO:
-                    ms = new MensajeProtocolo(Primitiva.INFO, "Welcome, please type your credentials to LOG in");
+                    ms = new MensajeProtocolo(Primitiva.INFO, Strings.MENSAJE_INICIO);
                 break;
                 case XAUTH:
                     String usr = me.getIdCola();
                     String pswd = me.getMensaje();
                     
                     if (logins.isIPBlocked(client)){
-                        ms = new MensajeProtocolo(Primitiva.ERROR, "Err Max Number of login attempts reached.");
+                        ms = new MensajeProtocolo(Primitiva.ERROR, Strings.ERROR_MAX_FAIL_LOGGINS);
                     }
                     else {
                         if (validateCredentials(usr,pswd)){
                             this.usrLogged = true;
-                            ms = new MensajeProtocolo(Primitiva.XAUTH, "User successfully logged");
+                            ms = new MensajeProtocolo(Primitiva.XAUTH, Strings.MENSAJE_LOGGED);
                             logins.resetCount(client);
                         }
                         else{
                             logins.incrementCount(client);
-                            ms = new MensajeProtocolo(Primitiva.NOTAUTH, "Err 401 ~ Credentials DO NOT MATCH. Try again" );
+                            ms = new MensajeProtocolo(Primitiva.NOTAUTH, Strings.ERROR_401_CREDENTIALS);
                         }
                     }
 
@@ -101,7 +102,7 @@ class Sirviente implements Runnable {
                         mapa.push(key, val);
                         ms = new MensajeProtocolo(Primitiva.ADDED);
                     }
-                    else ms = new MensajeProtocolo(Primitiva.NOTAUTH,"User login is required");
+                    else ms = new MensajeProtocolo(Primitiva.NOTAUTH, Strings.ERROR_NOT_LOGIN);
                 break;
                 case READL:
                     if(this.usrLogged){
@@ -114,7 +115,7 @@ class Sirviente implements Runnable {
                             ms = new MensajeProtocolo(Primitiva.EMPTY);
                         }
                     }
-                    else ms = new MensajeProtocolo(Primitiva.NOTAUTH,"User login is required");
+                    else ms = new MensajeProtocolo(Primitiva.NOTAUTH,Strings.ERROR_NOT_LOGIN);
                 break;
 
                 case DELETEL:
@@ -133,11 +134,11 @@ class Sirviente implements Runnable {
                         }
 
                     } 
-                    else ms = new MensajeProtocolo(Primitiva.NOTAUTH,"User login is required");
+                    else ms = new MensajeProtocolo(Primitiva.NOTAUTH,Strings.ERROR_NOT_LOGIN);
                 break;
 
                 default:
-                    ms = new MensajeProtocolo(Primitiva.ERROR,"Err Not Understand ");
+                    ms = new MensajeProtocolo(Primitiva.ERROR,Strings.ERROR_NOT_UNDERSTAND);
                 }  //fin del selector segun el mensaje entrante
             
                 oos.writeObject(ms);  //concentra la escritura de mensajes ¿bueno?

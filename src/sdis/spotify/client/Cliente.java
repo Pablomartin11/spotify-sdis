@@ -26,23 +26,25 @@ public class Cliente {
             //Sin teclado, probemos las primitivas por programa
             System.out.println(Strings.AVISO_EMPEZAR); System.in.read();
             //INICIO Escenario 1
+
             pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.XAUTH,"Hector", "1234"));
-            pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.XAUTH,"Hector", "1234"));
-            //pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.XAUTH,"Hector", "1234"));
             pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.XAUTH,"hector", "1234"));
-            pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.ADD2L,"Lista1", "Esclava remix"));
+            pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.ADD2L,"Lista1", "Cancion1"));
+            pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.ADD2L,"Lista1", "Cancion2"));
+
+            pruebaPeticionRespuesta(new MensajeProtocolo(Primitiva.READL,"Lista1"));
 
 
             //a estas alguras algún cliente externo debería insertar un mensaje en la cola
             //FIN Esceniario 1
         } catch (java.io.EOFException e) {
-            System.err.println(Strings.ERROR_FINCONEXION);
+            System.err.println(Strings.ERRORC_FINCONEXION);
         } catch (java.io.IOException e) {
-            System.err.println(Strings.ERROR_APERTURA_ES+e);
+            System.err.println(Strings.ERRORC_APERTURA_ES +e);
         } catch (MalMensajeProtocoloException e) {
-            System.err.println(Strings.ERROR_MALMENSAJEPROTOCOLO+e);
+            System.err.println(Strings.ERRORC_MALMENSAJEPROTOCOLO +e);
         } catch (Exception e) {
-            System.err.println(Strings.ERROR_EXCEPCION+e);
+            System.err.println(Strings.ERRORC_EXCEPCION +e);
         } finally {
         ois.close();
         oos.close();
