@@ -97,17 +97,16 @@ class Sirviente implements Runnable {
 
                 break;
                 case ADD2L:
-                    if (this.usrLogged && !this.banned){
+                    if (this.usrLogged ){
                         String key = me.getIdCola();
                         String val = me.getMensaje();
                         mapa.push(key, val);
                         ms = new MensajeProtocolo(Primitiva.ADDED);
                     }
-                    else if(!this.usrLogged) ms = new MensajeProtocolo(Primitiva.NOTAUTH,Strings.ERROR_NOT_LOGIN);
-                    else if(this.banned) ms = new MensajeProtocolo(Primitiva.ERROR,Strings.ERROR_BANNED);
+                    else ms = new MensajeProtocolo(Primitiva.NOTAUTH,Strings.ERROR_NOT_LOGIN);
                 break;
                 case READL:
-                    if(this.usrLogged && !this.banned){
+                    if(this.usrLogged ){
                         String key = me.getIdCola();
                         String men = null;
                         men = mapa.pop(key);
@@ -117,12 +116,11 @@ class Sirviente implements Runnable {
                             ms = new MensajeProtocolo(Primitiva.EMPTY);
                         }
                     }
-                    else if(!this.usrLogged) ms = new MensajeProtocolo(Primitiva.NOTAUTH,Strings.ERROR_NOT_LOGIN);
-                    else if(this.banned) ms = new MensajeProtocolo(Primitiva.ERROR,Strings.ERROR_BANNED);
+                    else ms = new MensajeProtocolo(Primitiva.NOTAUTH,Strings.ERROR_NOT_LOGIN);
                 break;
 
                 case DELETEL:
-                    if(this.usrLogged && !this.banned){
+                    if(this.usrLogged ){
                         String key = me.getIdCola();
                         boolean valor = false;
                         //Se comprueba que la clave existe
@@ -137,8 +135,8 @@ class Sirviente implements Runnable {
                         }
 
                     } 
-                    else if(!this.usrLogged) ms = new MensajeProtocolo(Primitiva.NOTAUTH,Strings.ERROR_NOT_LOGIN);
-                    else if(this.banned) ms = new MensajeProtocolo(Primitiva.ERROR,Strings.ERROR_BANNED);
+                    else ms = new MensajeProtocolo(Primitiva.NOTAUTH,Strings.ERROR_NOT_LOGIN);
+
                 break;
 
                 default:
