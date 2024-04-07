@@ -14,4 +14,5 @@ public class Strings {
     public static String ERROR_401_CREDENTIALS = "Err 401 ~ Credentials DO NOT MATCH. Try again";
     public static String ERROR_NOT_LOGIN = "User login is required";
     public static String ERROR_NOT_UNDERSTAND = "Err Not Understand ";
+    public static String ERROR_BANNED = "User is baned";
 }

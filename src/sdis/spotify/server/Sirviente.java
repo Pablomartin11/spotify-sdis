@@ -81,6 +81,7 @@ class Sirviente implements Runnable {
                     
                     if (logins.isIPBlocked(client)){
                         ms = new MensajeProtocolo(Primitiva.ERROR, Strings.ERROR_MAX_FAIL_LOGGINS);
+                        this.banned = true;
                     }
                     else {
                         if (validateCredentials(usr,pswd)){
@@ -103,7 +104,7 @@ class Sirviente implements Runnable {
                         ms = new MensajeProtocolo(Primitiva.ADDED);
                     }
                     else if(!this.usrLogged) ms = new MensajeProtocolo(Primitiva.NOTAUTH,Strings.ERROR_NOT_LOGIN);
-                    else if(this.banned) ms = new MensajeProtocolo(Primitiva.ERROR,Strings.ERROR_MAX_CONNECIONS);
+                    else if(this.banned) ms = new MensajeProtocolo(Primitiva.ERROR,Strings.ERROR_BANNED);
                 break;
                 case READL:
                     if(this.usrLogged && !this.banned){
@@ -117,7 +118,7 @@ class Sirviente implements Runnable {
                         }
                     }
                     else if(!this.usrLogged) ms = new MensajeProtocolo(Primitiva.NOTAUTH,Strings.ERROR_NOT_LOGIN);
-                    else if(this.banned) ms = new MensajeProtocolo(Primitiva.ERROR,Strings.ERROR_MAX_CONNECIONS);
+                    else if(this.banned) ms = new MensajeProtocolo(Primitiva.ERROR,Strings.ERROR_BANNED);
                 break;
 
                 case DELETEL:
@@ -137,7 +138,7 @@ class Sirviente implements Runnable {
 
                     } 
                     else if(!this.usrLogged) ms = new MensajeProtocolo(Primitiva.NOTAUTH,Strings.ERROR_NOT_LOGIN);
-                    else if(this.banned) ms = new MensajeProtocolo(Primitiva.ERROR,Strings.ERROR_MAX_CONNECIONS);
+                    else if(this.banned) ms = new MensajeProtocolo(Primitiva.ERROR,Strings.ERROR_BANNED);
                 break;
 
                 default:
