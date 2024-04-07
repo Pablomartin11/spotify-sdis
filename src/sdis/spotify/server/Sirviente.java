@@ -62,7 +62,7 @@ class Sirviente implements Runnable {
                 msFirst = new MensajeProtocolo(Primitiva.INFO, Strings.MENSAJE_INICIO);
             }
 
-            oos.writeObject(msFirst);  //concentra la escritura de mensajes ¿bueno?
+            oos.writeObject(msFirst);  //concentra la escritura de mensajes
             System.out.println("Sirviente: "+ns+": [RESP: "+msFirst+"]");
 
             while (!this.banned) {
